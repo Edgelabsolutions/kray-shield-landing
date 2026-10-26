@@ -1,0 +1,35 @@
+---
+/**
+ * The Kray wordmark, from kray.in.ua, recoloured to `currentColor` so it follows the theme.
+ * The accessible name is set by the caller (usually the link that wraps it).
+ */
+interface Props {
+  width?: number
+  class?: string
+  title?: string
+}
+
+const { width = 92, class: className, title } = Astro.props
+const height = Math.round((width * 31.5) / 179)
+---
+
+<svg
+  width={width}
+  height={height}
+  viewBox="1 1.77 179 31.47"
+  fill="currentColor"
+  class={className}
+  role={title ? 'img' : undefined}
+  aria-hidden={title ? undefined : 'true'}
+  aria-label={title}
+  focusable="false"
+>
+  <path d="M163.471 1.84082L147.435 33.2334H162.388L162.387 33.2319H162.388L180 1.84082H163.471Z" />
+  <path d="M120.463 1.84277L120.623 20.726L127.755 33.2338H139.194V24.7652L127.392 1.84277H120.463Z" />
+  <path d="M156.65 10.1293L152.383 1.84082H135.505L146.631 21.3591H150.84L156.65 10.1293Z" />
+  <path d="M99.2568 24.7652V33.2338H110.69L117.738 20.873L118.177 1.84277H111.059L99.2568 24.7652Z" />
+  <path d="M76.7752 1.84375H64.973L53.1787 24.7646V33.2332H64.6115L68.885 25.7346L76.7752 10.5114V1.84375Z" />
+  <path d="M89.0917 1.7666L83.871 1.844L72.0688 24.7649L77.7568 33.2335H94.0551L88.3324 24.7586L88.2203 22.1979L95.3244 17.5379L95.6654 6.93525L89.0917 1.7666Z" />
+  <path d="M28.8416 11.8557V1.80273H17.0425L1 33.2333H16.6794V33.1953L28.8416 11.8557Z" />
+  <path d="M50.1253 11.8557L53.1784 1.80273H41.1615L33.456 8.23038L23.8071 25.3097L29.1004 33.1969H45.3987L38.3168 22.7017L39.6744 19.9246L50.1253 11.8557Z" />
+</svg>

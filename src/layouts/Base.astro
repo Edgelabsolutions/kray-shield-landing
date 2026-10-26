@@ -1,0 +1,74 @@
+---
+/**
+ * The document shell: <head> (meta, fonts, alternates, theme bootstrap) and the global styles.
+ * Page content goes in the default slot.
+ */
+import { Font } from 'astro:assets'
+import '../styles/tokens.css'
+import '../styles/base.css'
+import '../styles/atoms.css'
+import { LANGS, OG_LOCALE, pathFor, type Lang } from '../i18n/lang'
+import { withBase } from '../lib/url'
+
+interface Props {
+  lang: Lang
+  title: string
+  description: string
+}
+
+const { lang, title, description } = Astro.props
+const site = Astro.site
+const abs = (path: string) => (site ? new URL(path, site).href : path)
+const canonical = abs(pathFor(lang))
+// Rendered from the page's own key-split maths (1200×630), one per language.
+const ogImage = abs(withBase(lang === 'uk' ? 'og-image-uk.png' : 'og-image.png'))
+---
+
+<!doctype html>
+<html lang={lang} data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="icon" href={withBase('favicon.svg')} type="image/svg+xml" />
+    <link rel="canonical" href={canonical} />
+    {LANGS.map((l) => (
+      <link rel="alternate" hreflang={l} href={abs(pathFor(l))} />
+    ))}
+    <link rel="alternate" hreflang="x-default" href={abs(pathFor('en'))} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Kray Shield" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={OG_LOCALE[lang]} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!--
+      Theme bootstrap: runs before first paint so a saved light theme never flashes dark. Dark is the
+      default and there is no system-preference mode (portal parity). Storage can throw in private
+      windows, hence the try.
+    -->
+    <script is:inline>
+      try {
+        if (localStorage.getItem('kray-theme') === 'light') {
+          document.documentElement.dataset.theme = 'light'
+        }
+      } catch {}
+    </script>
+
+    <Font cssVariable="--font-chakra" preload={[{ subset: 'latin', weight: 700 }]} />
+    <Font cssVariable="--font-exo" />
+    <Font cssVariable="--font-jetbrains" />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

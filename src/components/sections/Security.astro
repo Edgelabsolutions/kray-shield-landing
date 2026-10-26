@@ -1,0 +1,280 @@
+---
+/**
+ * Security: what a thief gets from each piece (a real table), the one combination that does work
+ * (said plainly — it's why leases and approvals exist), and the design principles.
+ */
+import { Database, Drone, Smartphone, Usb, TriangleAlert } from 'lucide-react'
+import SectionIntro from '../SectionIntro.astro'
+import type { Copy } from '../../content/types'
+
+interface Props {
+  copy: Copy
+}
+
+const { copy } = Astro.props
+const sec = copy.security
+const ROW_ICONS = [Drone, Smartphone, Database, Usb]
+---
+
+<section id="security" class="section security" aria-labelledby="security-title">
+  <div class="container">
+    <SectionIntro id="security-title" title={sec.title} lead={sec.lead} />
+
+    <div class="matrix-wrap">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th scope="col">{sec.colWhat}</th>
+            <th scope="col">{sec.colHolds}</th>
+            <th scope="col">{sec.colGets}</th>
+            <th scope="col">
+              <span class="visually-hidden">{sec.colGets}</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {sec.rows.map((row, i) => {
+            const Icon = ROW_ICONS[i]
+            return (
+              <tr>
+                <th scope="row" class="what">
+                  <span class="what-icon" aria-hidden="true">
+                    <Icon size={18} strokeWidth={1.75} />
+                  </span>
+                  {row.what}
+                </th>
+                <td data-label={sec.colHolds}>{row.holds}</td>
+                <td data-label={sec.colGets} class="gets">
+                  {row.gets}
+                </td>
+                <td class="verdict">
+                  <span class="lozenge" data-tone={row.tone}>
+                    {row.verdict}
+                  </span>
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+
+    <aside class="residual" aria-labelledby="residual-title">
+      <TriangleAlert size={20} strokeWidth={1.75} className="residual-icon" aria-hidden="true" />
+      <div>
+        <h3 id="residual-title" class="residual-title">
+          {sec.residualTitle}
+        </h3>
+        <p>{sec.residual}</p>
+      </div>
+    </aside>
+
+    <h3 class="principles-title">{sec.principlesTitle}</h3>
+    <ul class="principles" role="list">
+      {sec.principles.map((p) => (
+        <li class="principle">
+          <h4 class="principle-title">{p.title}</h4>
+          <p class="principle-body">{p.body}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  /* ---------------------------------------------------------------- matrix */
+  .matrix-wrap {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-base);
+    line-height: 1.5;
+  }
+  .matrix thead th {
+    padding: 12px 18px;
+    background: var(--panel2);
+    border-bottom: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    font-weight: 500;
+    letter-spacing: var(--tracking-label);
+    text-align: left;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .matrix tbody tr + tr > * {
+    border-top: 1px solid var(--line);
+  }
+  .matrix tbody th,
+  .matrix tbody td {
+    padding: 18px;
+    vertical-align: top;
+    text-align: left;
+  }
+  .what {
+    width: 22%;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--fs-body);
+    line-height: 1.3;
+    color: var(--text);
+  }
+  .what-icon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    margin-bottom: 10px;
+    border: 1px solid var(--line2);
+    border-radius: 8px;
+    color: var(--dim);
+  }
+  .matrix td {
+    color: var(--dim);
+  }
+  .matrix td.gets {
+    color: var(--text);
+  }
+  .verdict {
+    width: 1%;
+    white-space: nowrap;
+  }
+
+  /* ---------------------------------------------------------------- residual risk */
+  .residual {
+    display: flex;
+    gap: var(--space-4);
+    margin-top: var(--space-5);
+    padding: 18px 20px;
+    border: 1px solid color-mix(in srgb, var(--attn) 40%, transparent);
+    border-radius: var(--radius-card);
+    background: color-mix(in srgb, var(--attn) 7%, transparent);
+  }
+  .residual :global(.residual-icon) {
+    flex: none;
+    margin-top: 2px;
+    color: var(--attn);
+  }
+  .residual-title {
+    font-size: var(--fs-base);
+    color: var(--attn);
+  }
+  .residual p {
+    margin-top: 4px;
+    max-width: 80ch;
+    font-size: var(--fs-base);
+    color: var(--text);
+  }
+
+  /* ---------------------------------------------------------------- principles: a spec sheet */
+  .principles-title {
+    margin-top: clamp(3.5rem, 2rem + 4vw, 6rem);
+    font-size: var(--fs-xl);
+  }
+  .principles {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0 var(--space-6);
+    margin: var(--space-5) 0 0;
+  }
+  .principle {
+    padding: var(--space-5) 0 var(--space-6);
+    border-top: 1px solid var(--line);
+  }
+  .principle-title {
+    position: relative;
+    padding-left: 18px;
+    font-size: var(--fs-base);
+    line-height: 1.3;
+  }
+  .principle-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.3em;
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    background: var(--brand);
+    box-shadow: 4px 4px 0 -1px var(--camo-4);
+  }
+  .principle-body {
+    margin-top: var(--space-2);
+    font-size: var(--fs-sm);
+    line-height: 1.55;
+    color: var(--dim);
+  }
+
+  @media (max-width: 1100px) {
+    .principles {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  /* A table on a phone: each row becomes a labelled card. */
+  @media (max-width: 760px) {
+    .matrix thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+    .matrix,
+    .matrix tbody,
+    .matrix tr,
+    .matrix th,
+    .matrix td {
+      display: block;
+      width: auto;
+    }
+    .matrix tbody tr {
+      padding: 16px 16px 18px;
+    }
+    .matrix tbody tr + tr {
+      border-top: 1px solid var(--line);
+    }
+    .matrix tbody tr + tr > * {
+      border-top: 0;
+    }
+    .matrix tbody th,
+    .matrix tbody td {
+      padding: 0;
+    }
+    .matrix tbody td {
+      margin-top: 12px;
+    }
+    .matrix td[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      margin-bottom: 2px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+      color: var(--dim);
+      opacity: 0.8;
+    }
+    .what {
+      display: flex !important;
+      align-items: center;
+      gap: 12px;
+    }
+    .what-icon {
+      margin: 0;
+    }
+    .verdict {
+      white-space: normal;
+    }
+  }
+  @media (max-width: 560px) {
+    .principles {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

@@ -1,0 +1,165 @@
+---
+/**
+ * Contact: the one inverted band on the page (a nod to kray.in.ua's contact block), with the
+ * Signal CTA. Contact details live in config/site.ts.
+ */
+import { MessageCircle } from 'lucide-react'
+import CamoShield from '../brand/CamoShield.astro'
+import TextType from '../reactbits/TextType/TextType.tsx'
+import { site } from '../../config/site'
+import type { Copy } from '../../content/types'
+
+interface Props {
+  copy: Copy
+}
+
+const { copy } = Astro.props
+const c = copy.contact
+---
+
+<section id="contact" class="contact" aria-labelledby="contact-title">
+  <div class="container band">
+    <div class="copy">
+      <!--
+        The bracketed, typed word is a nod to kray.in.ua's hero (React Bits TextType). It types
+        each audience once and settles on the last; assistive tech and crawlers get the plain
+        sentence through `srText`, and without JS the static last word shows instead.
+      -->
+      <h2 id="contact-title" class="title">
+        {c.titlePre}{' '}
+        <span class="typed">
+          <span class="bracket" aria-hidden="true">
+            [
+          </span>
+          <span class="typed-live">
+            <TextType
+              client:visible
+              as="span"
+              text={c.titleTyped}
+              loop={false}
+              typingSpeed={60}
+              deletingSpeed={30}
+              initialDelay={1000}
+              pauseDuration={1600}
+              startOnVisible
+              srText={c.titleTyped[c.titleTyped.length - 1]}
+              cursorColor="currentColor"
+            />
+          </span>
+          <span class="typed-fallback">{c.titleTyped[c.titleTyped.length - 1]}</span>
+          <span class="bracket" aria-hidden="true">
+            ]
+          </span>
+        </span>
+      </h2>
+      <noscript>
+        <!-- is:inline — otherwise Astro hoists this into the page CSS and it would apply always. -->
+        <style is:inline>
+          .typed-live {
+            display: none !important;
+          }
+          .typed-fallback {
+            display: inline !important;
+          }
+        </style>
+      </noscript>
+      <p class="lead">{c.lead}</p>
+    </div>
+    <div class="action">
+      <a
+        class="btn btn--primary btn--lg signal"
+        href={site.signalUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <MessageCircle size={18} strokeWidth={2} aria-hidden="true" />
+        {c.cta}
+      </a>
+      <p class="note">{c.note}</p>
+    </div>
+    <span class="mark" aria-hidden="true">
+      <CamoShield size={180} />
+    </span>
+  </div>
+</section>
+
+<style>
+  .contact {
+    padding-block: var(--space-6) var(--section-pad);
+  }
+  .band {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
+    gap: var(--space-6) var(--space-8);
+    align-items: end;
+    overflow: hidden;
+    padding-block: clamp(2.5rem, 1.5rem + 4vw, 5rem);
+    border-radius: 18px;
+    background: var(--invert-bg);
+    color: var(--invert-text);
+  }
+  /* The band sits inside the container's padding, so give it its own inner gutter. */
+  .band.container {
+    max-width: calc(var(--container) + 2 * var(--gutter));
+    padding-inline: clamp(1.5rem, 1rem + 3vw, 4rem);
+    width: calc(100% - 2 * var(--gutter));
+  }
+  .typed {
+    white-space: nowrap;
+  }
+  .bracket {
+    color: var(--invert-dim);
+    font-weight: 500;
+  }
+  /* Shown only without JS (see the <noscript> above). */
+  .typed-fallback {
+    display: none;
+  }
+  .title {
+    max-width: 18ch;
+    font-size: var(--fs-2xl);
+    line-height: 1.1;
+  }
+  .lead {
+    margin-top: var(--space-4);
+    max-width: 52ch;
+    color: var(--invert-dim);
+  }
+  .action {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: start;
+    gap: var(--space-3);
+  }
+  .signal {
+    height: 56px;
+    padding-inline: var(--space-6);
+    font-size: var(--fs-body);
+  }
+  .note {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--invert-dim);
+  }
+  .mark {
+    position: absolute;
+    right: -30px;
+    top: -36px;
+    opacity: 0.14;
+    transform: rotate(-8deg);
+    pointer-events: none;
+  }
+
+  @media (max-width: 860px) {
+    .band {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .mark {
+      top: auto;
+      bottom: -40px;
+      right: -40px;
+    }
+  }
+</style>

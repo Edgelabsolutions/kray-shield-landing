@@ -1,0 +1,367 @@
+---
+/**
+ * Sticky header: lockup, section nav, language and theme switches, and the contact CTA.
+ * Below 1024px the nav collapses into a menu panel. No framework: a small script owns the theme
+ * toggle, the menu and the "scrolled" state.
+ */
+import { Menu, Moon, Sun, X } from 'lucide-react'
+import CamoShield from './brand/CamoShield.astro'
+import KrayWordmark from './brand/KrayWordmark.astro'
+import { LANG_LABEL, otherLang, pathFor, type Lang } from '../i18n/lang'
+import type { Copy } from '../content/types'
+
+interface Props {
+  lang: Lang
+  copy: Copy
+}
+
+const { lang, copy } = Astro.props
+const t = copy.nav
+const links = [
+  { href: '#how', label: t.how },
+  { href: '#security', label: t.security },
+  { href: '#use-cases', label: t.useCases },
+  { href: '#field', label: t.field },
+  { href: '#console', label: t.console },
+  { href: '#faq', label: t.faq },
+]
+const other = otherLang(lang)
+---
+
+<a class="skip-link" href="#main">
+  {t.skip}
+</a>
+
+<header class="header" data-header>
+  <div class="container bar">
+    <a class="lockup" href={pathFor(lang)} aria-label={t.home}>
+      <span class="mark">
+        <CamoShield size={22} />
+      </span>
+      <KrayWordmark width={68} class="wordmark" />
+      <span class="product">SHIELD</span>
+    </a>
+
+    <nav class="nav" aria-label={t.primary}>
+      <ul role="list">
+        {links.map((l) => (
+          <li>
+            <a href={l.href}>{l.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="tools">
+      <a
+        class="tool lang"
+        href={pathFor(other)}
+        hreflang={other}
+        lang={other}
+        aria-label={t.language}
+        title={t.language}
+        data-lang-link
+      >
+        {LANG_LABEL[other]}
+      </a>
+      <button
+        class="tool"
+        type="button"
+        data-theme-toggle
+        data-label-light={t.toLight}
+        data-label-dark={t.toDark}
+        aria-label={t.toLight}
+        title={t.toLight}
+      >
+        <Sun size={16} className="icon-sun" aria-hidden="true" />
+        <Moon size={16} className="icon-moon" aria-hidden="true" />
+      </button>
+      <a class="btn btn--primary cta" href="#contact">
+        {t.contact}
+      </a>
+      <button
+        class="tool menu-btn"
+        type="button"
+        aria-expanded="false"
+        aria-controls="menu-panel"
+        data-menu-toggle
+        data-label-open={t.menu}
+        data-label-close={t.close}
+        aria-label={t.menu}
+      >
+        <Menu size={18} className="icon-open" aria-hidden="true" />
+        <X size={18} className="icon-close" aria-hidden="true" />
+      </button>
+    </div>
+  </div>
+
+  <div class="panel" id="menu-panel" data-menu-panel hidden>
+    <nav class="container" aria-label={t.mobile}>
+      <ul role="list">
+        {links.map((l) => (
+          <li>
+            <a href={l.href} data-menu-link>
+              {l.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <a class="btn btn--primary btn--lg panel-cta" href="#contact" data-menu-link>
+        {t.contact}
+      </a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const root = document.documentElement
+  const header = document.querySelector<HTMLElement>('[data-header]')
+
+  // Theme: dark by default, persisted. The <head> bootstrap already applied a saved choice.
+  const themeBtn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]')
+  const syncThemeLabel = () => {
+    if (!themeBtn) return
+    const light = root.dataset.theme === 'light'
+    const label = light ? themeBtn.dataset.labelDark : themeBtn.dataset.labelLight
+    if (label) {
+      themeBtn.setAttribute('aria-label', label)
+      themeBtn.title = label
+    }
+  }
+  themeBtn?.addEventListener('click', () => {
+    const next = root.dataset.theme === 'light' ? 'dark' : 'light'
+    root.dataset.theme = next
+    try {
+      localStorage.setItem('kray-theme', next)
+    } catch {
+      /* private mode: the choice just won't persist */
+    }
+    syncThemeLabel()
+    document.dispatchEvent(new CustomEvent('kray:theme', { detail: next }))
+  })
+  syncThemeLabel()
+
+  // Language: keep the reader's place on the page.
+  document.querySelector<HTMLAnchorElement>('[data-lang-link]')?.addEventListener('click', (e) => {
+    const link = e.currentTarget as HTMLAnchorElement
+    if (location.hash) link.href = link.pathname + location.hash
+  })
+
+  // The header gains a surface once the page has scrolled under it.
+  const onScroll = () => header?.toggleAttribute('data-scrolled', window.scrollY > 8)
+  onScroll()
+  window.addEventListener('scroll', onScroll, { passive: true })
+
+  // Mobile menu.
+  const menuBtn = document.querySelector<HTMLButtonElement>('[data-menu-toggle]')
+  const panel = document.querySelector<HTMLElement>('[data-menu-panel]')
+  const setMenu = (open: boolean) => {
+    if (!menuBtn || !panel) return
+    menuBtn.setAttribute('aria-expanded', String(open))
+    const label = open ? menuBtn.dataset.labelClose : menuBtn.dataset.labelOpen
+    if (label) menuBtn.setAttribute('aria-label', label)
+    panel.hidden = !open
+    header?.toggleAttribute('data-menu-open', open)
+  }
+  menuBtn?.addEventListener('click', () =>
+    setMenu(menuBtn.getAttribute('aria-expanded') !== 'true'),
+  )
+  panel
+    ?.querySelectorAll('[data-menu-link]')
+    .forEach((a) => a.addEventListener('click', () => setMenu(false)))
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menuBtn?.getAttribute('aria-expanded') === 'true') {
+      setMenu(false)
+      menuBtn.focus()
+    }
+  })
+  window
+    .matchMedia('(min-width: 1024px)')
+    .addEventListener('change', (m) => m.matches && setMenu(false))
+</script>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 1px solid transparent;
+    transition:
+      background-color var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out);
+  }
+  .header[data-scrolled],
+  .header[data-menu-open] {
+    background: var(--header-bg);
+    border-bottom-color: var(--line);
+    backdrop-filter: blur(12px) saturate(1.2);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    height: var(--header-h);
+  }
+
+  .lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+    text-decoration: none;
+    flex: none;
+  }
+  .mark {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid color-mix(in srgb, var(--brand) 55%, transparent);
+    border-radius: 10px;
+    background: var(--brand-subtle);
+  }
+  .lockup :global(.wordmark) {
+    display: block;
+    margin-top: 1px;
+  }
+  .product {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--brand);
+    line-height: 1;
+  }
+
+  .nav {
+    margin-inline: auto;
+  }
+  .nav ul {
+    display: flex;
+    gap: clamp(12px, 1.6vw, 26px);
+    margin: 0;
+  }
+  .nav a {
+    position: relative;
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    color: var(--dim);
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .nav a:hover {
+    color: var(--text);
+  }
+
+  .tools {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-left: auto;
+  }
+  .nav + .tools {
+    margin-left: 0;
+  }
+  .tool {
+    display: inline-grid;
+    place-items: center;
+    min-width: 36px;
+    height: 36px;
+    padding-inline: 8px;
+    border: 1px solid var(--line2);
+    border-radius: var(--radius-btn);
+    background: transparent;
+    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+  .tool:hover {
+    color: var(--text);
+    border-color: var(--dim);
+  }
+
+  /* Theme icon shows the theme you'd switch TO. */
+  .tool :global(.icon-sun) {
+    display: block;
+  }
+  .tool :global(.icon-moon) {
+    display: none;
+  }
+  :global(:root[data-theme='light']) .tool :global(.icon-sun) {
+    display: none;
+  }
+  :global(:root[data-theme='light']) .tool :global(.icon-moon) {
+    display: block;
+  }
+
+  .menu-btn :global(.icon-close) {
+    display: none;
+  }
+  .menu-btn[aria-expanded='true'] :global(.icon-open) {
+    display: none;
+  }
+  .menu-btn[aria-expanded='true'] :global(.icon-close) {
+    display: block;
+  }
+
+  .panel {
+    border-top: 1px solid var(--line);
+    padding-block: var(--space-4) var(--space-6);
+  }
+  .panel ul {
+    display: grid;
+    gap: 2px;
+    margin: 0 0 var(--space-5);
+  }
+  .panel ul a {
+    display: block;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: var(--fs-lg);
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .panel-cta {
+    width: 100%;
+  }
+
+  @media (max-width: 1023.98px) {
+    .nav {
+      display: none;
+    }
+  }
+  @media (min-width: 1024px) {
+    .menu-btn,
+    .panel {
+      display: none !important;
+    }
+  }
+  @media (max-width: 560px) {
+    .cta {
+      display: none;
+    }
+    .lockup :global(.wordmark) {
+      width: 58px;
+      height: auto;
+    }
+    .product {
+      font-size: 13px;
+    }
+  }
+  @media (max-width: 360px) {
+    .bar {
+      gap: var(--space-3);
+    }
+    .mark {
+      display: none;
+    }
+  }
+</style>

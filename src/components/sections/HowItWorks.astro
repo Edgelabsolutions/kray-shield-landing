@@ -1,0 +1,315 @@
+---
+/**
+ * "How it works": three steps that scroll past a sticky diagram. A real sequence, so the steps are
+ * numbered. GSAP ScrollTrigger activates each step as it crosses the middle of the viewport and
+ * plays Share B's journey for it; a rail scrubs alongside. Without JS every step reads at full
+ * strength and the diagram shows step 1; with reduced motion steps still activate, but each one
+ * snaps to its end state.
+ */
+import HowDiagram from './HowDiagram.astro'
+import SectionIntro from '../SectionIntro.astro'
+import type { Copy } from '../../content/types'
+
+interface Props {
+  copy: Copy
+}
+
+const { copy } = Astro.props
+const how = copy.how
+---
+
+<section id="how" class="section how" aria-labelledby="how-title" data-how>
+  <div class="container">
+    <SectionIntro id="how-title" title={how.title} lead={how.lead} />
+
+    <div class="layout">
+      <div class="figure">
+        <div class="sticky">
+          <HowDiagram d={how.diagram} />
+        </div>
+      </div>
+
+      <ol class="steps" role="list" data-steps-list>
+        <span class="rail" aria-hidden="true">
+          <span class="rail-fill" data-rail></span>
+        </span>
+        {how.steps.map((step, i) => (
+          <li class="step" data-step={i + 1} data-active={i === 0 ? '' : undefined}>
+            <span class="num" aria-hidden="true">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <h3 class="step-title">{step.title}</h3>
+            <p class="step-body">{step.body}</p>
+            <ul class="points" role="list">
+              {step.points.map((p) => (
+                <li>{p}</li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gsap, ScrollTrigger, mm } from '../../scripts/motion'
+
+  const root = document.querySelector<HTMLElement>('[data-how]')
+  const diagram = root?.querySelector<SVGSVGElement>('[data-diagram]')
+  const steps = root ? Array.from(root.querySelectorAll<HTMLElement>('[data-step]')) : []
+  const chip = (name: string) => diagram?.querySelector<SVGGElement>(`[data-chip="${name}"]`)
+
+  if (root && diagram && steps.length) {
+    // From here on, inactive steps may be dimmed: the page is being driven.
+    root.setAttribute('data-enhanced', '')
+
+    const A = chip('a')!
+    const B = chip('b')!
+    const KEY = chip('key')!
+    const DISK = chip('disk')!
+
+    // Chip centres, in the diagram's viewBox units (see HowDiagram.astro).
+    const P = {
+      droneA: { x: 85, y: 418 },
+      droneB: { x: 125, y: 418 },
+      bench: { x: 125, y: 82 },
+      cloud: { x: 470, y: 82 },
+      cloudDown: { x: 500, y: 82 },
+      phoneDown: { x: 500, y: 418 },
+      phone: { x: 470, y: 418 },
+    }
+
+    let reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    let tl: gsap.core.Timeline | null = null
+    let current = 0
+
+    /** Where every chip sits once step n has played out. */
+    const endState = (n: number) => {
+      gsap.set(A, { ...P.droneA, opacity: n === 3 ? 0 : 1 })
+      gsap.set(B, {
+        ...(n === 1 ? P.cloud : n === 2 ? P.phone : P.droneB),
+        opacity: n === 3 ? 0 : 1,
+      })
+      gsap.set(KEY, { ...P.droneB, opacity: 0 })
+      gsap.set(DISK, { ...P.droneB, opacity: n === 3 ? 1 : 0 })
+    }
+
+    const play = (n: number) => {
+      tl?.kill()
+      if (reduce) {
+        endState(n)
+        return
+      }
+      tl = gsap.timeline({ defaults: { ease: 'power2.inOut' } })
+      if (n === 1) {
+        // Keys are born on the drone; Share A stays, Share B leaves sealed via the bench.
+        tl.set(A, { ...P.droneA, opacity: 0 })
+          .set(B, { ...P.droneB, opacity: 0 })
+          .set([KEY, DISK], { opacity: 0 })
+          .to([A, B], { opacity: 1, duration: 0.35, stagger: 0.12 })
+          .to(B, { ...P.bench, duration: 0.9 }, '+=0.25')
+          .to(B, { ...P.cloud, duration: 0.8 })
+      } else if (n === 2) {
+        // The cloud hands the sealed share to the phones you've granted, under a lease.
+        tl.set(A, { ...P.droneA, opacity: 1 })
+          .set(B, { ...P.cloud, opacity: 1 })
+          .set([KEY, DISK], { opacity: 0 })
+          .to(B, { ...P.cloudDown, duration: 0.25 })
+          .to(B, { ...P.phoneDown, duration: 0.95 })
+          .to(B, { ...P.phone, duration: 0.25 })
+      } else {
+        // At power-on the share crosses the hotspot; A ⊕ B becomes the key; the disk opens.
+        tl.set(A, { ...P.droneA, opacity: 1 })
+          .set(B, { ...P.phone, opacity: 1 })
+          .set(KEY, { ...P.droneB, opacity: 0, scale: 0.85 })
+          .set(DISK, { ...P.droneB, opacity: 0 })
+          .to(B, { ...P.droneB, duration: 1.0 })
+          .to(A, { x: P.droneB.x, duration: 0.35, ease: 'power2.in' }, '+=0.1')
+          .to([A, B], { opacity: 0, duration: 0.2 }, '<0.15')
+          .to(KEY, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2)' }, '<')
+          .to(KEY, { opacity: 0, duration: 0.25 }, '+=0.7')
+          .to(DISK, { opacity: 1, duration: 0.3 }, '<')
+      }
+    }
+
+    const activate = (n: number) => {
+      if (n === current) return
+      current = n
+      diagram.dataset.activeStep = String(n)
+      steps.forEach((s, i) => s.toggleAttribute('data-active', i + 1 === n))
+      play(n)
+    }
+
+    // SVG transforms are set by GSAP from here on; start from step 1's end, as rendered.
+    gsap.set([A, B, KEY, DISK], { transformOrigin: '50% 50%' })
+    endState(1)
+
+    steps.forEach((el, i) => {
+      ScrollTrigger.create({
+        trigger: el,
+        start: 'top 58%',
+        end: 'bottom 58%',
+        onToggle: (self) => self.isActive && activate(i + 1),
+      })
+    })
+    activate(1)
+
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      reduce = false
+      gsap.fromTo(
+        '[data-rail]',
+        { scaleY: 0 },
+        {
+          scaleY: 1,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '[data-steps-list]',
+            start: 'top 58%',
+            end: 'bottom 58%',
+            scrub: 0.4,
+          },
+        },
+      )
+      return () => {
+        reduce = true
+      }
+    })
+  }
+</script>
+
+<style>
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    grid-template-areas: 'steps figure';
+    gap: clamp(2rem, 1rem + 4vw, 5rem);
+  }
+  .figure {
+    grid-area: figure;
+  }
+  .sticky {
+    position: sticky;
+    top: calc(var(--header-h) + 5vh);
+    padding: clamp(14px, 2vw, 24px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: color-mix(in srgb, var(--panel2) 70%, transparent);
+  }
+
+  .steps {
+    grid-area: steps;
+    position: relative;
+    margin: 0;
+    padding: 0 0 0 clamp(36px, 4vw, 56px);
+  }
+  .rail {
+    position: absolute;
+    left: 13px;
+    top: 6px;
+    bottom: 0;
+    width: 1px;
+    background: var(--line);
+  }
+  .rail-fill {
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    transform-origin: top;
+    transform: scaleY(0);
+  }
+
+  .step {
+    position: relative;
+    min-height: min(68vh, 620px);
+    padding-bottom: var(--space-7);
+    transition: opacity var(--dur-slow) var(--ease-out);
+  }
+  .step:last-child {
+    min-height: auto;
+    padding-bottom: 0;
+  }
+  [data-enhanced] .step:not([data-active]) {
+    opacity: 0.38;
+  }
+
+  .num {
+    position: absolute;
+    left: calc(-1 * clamp(36px, 4vw, 56px));
+    top: 0;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--line2);
+    border-radius: 7px;
+    background: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--dim);
+    transition:
+      color var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out);
+  }
+  [data-enhanced] .step[data-active] .num {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .step-title {
+    font-size: var(--fs-xl);
+    line-height: 1.2;
+  }
+  .step-body {
+    margin-top: var(--space-4);
+    max-width: 52ch;
+    color: var(--dim);
+  }
+  .points {
+    display: grid;
+    gap: var(--space-2);
+    margin: var(--space-5) 0 0;
+  }
+  .points li {
+    position: relative;
+    padding-left: 22px;
+    font-size: var(--fs-base);
+    line-height: 1.5;
+  }
+  .points li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 0.62em;
+    width: 9px;
+    height: 9px;
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+
+  @media (max-width: 960px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        'figure'
+        'steps';
+      gap: var(--space-6);
+    }
+    /* On a phone the diagram rides along at the top while the steps scroll under it. */
+    .sticky {
+      position: static;
+      padding: 10px;
+      background: var(--panel2);
+    }
+    .figure {
+      position: sticky;
+      top: calc(var(--header-h) + 8px);
+      z-index: 2;
+      align-self: start;
+    }
+    .step {
+      min-height: 46vh;
+    }
+  }
+</style>

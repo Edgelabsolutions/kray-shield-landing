@@ -1,0 +1,144 @@
+---
+/** Footer: lockup and tagline, the section links, and the legal line. */
+import CamoShield from './brand/CamoShield.astro'
+import KrayWordmark from './brand/KrayWordmark.astro'
+import { site } from '../config/site'
+import { withBase } from '../lib/url'
+import { LANG_LABEL, otherLang, pathFor, type Lang } from '../i18n/lang'
+import type { Copy } from '../content/types'
+
+interface Props {
+  lang: Lang
+  copy: Copy
+}
+
+const { lang, copy } = Astro.props
+const t = copy.nav
+const links = [
+  { href: '#how', label: t.how },
+  { href: '#security', label: t.security },
+  { href: '#use-cases', label: t.useCases },
+  { href: '#field', label: t.field },
+  { href: '#console', label: t.console },
+  { href: '#faq', label: t.faq },
+]
+const other = otherLang(lang)
+---
+
+<footer class="footer">
+  <div class="container top">
+    <div class="brand">
+      <a class="lockup" href={pathFor(lang)} aria-label={t.home}>
+        <span class="mark">
+          <CamoShield size={20} />
+        </span>
+        <KrayWordmark width={64} />
+        <span class="product">SHIELD</span>
+      </a>
+      <p class="tagline">{copy.footer.tagline}</p>
+    </div>
+    <nav aria-label={t.footer}>
+      <ul role="list" class="links">
+        {links.map((l) => (
+          <li>
+            <a href={l.href}>{l.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+  <div class="container">
+    <div class="bottom">
+      <span>{copy.footer.rights}</span>
+      {site.privacyUrl && (
+        <a href={site.privacyUrl} target="_blank" rel="noopener noreferrer">
+          {copy.footer.privacy}
+        </a>
+      )}
+      <a href={withBase('licenses/')}>{copy.footer.licences}</a>
+      <a class="lang" href={pathFor(other)} hreflang={other} lang={other}>
+        {LANG_LABEL[other]} · {t.language}
+      </a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--line);
+    padding-block: var(--space-7) var(--space-6);
+  }
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-6);
+  }
+  .lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .mark {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid color-mix(in srgb, var(--brand) 55%, transparent);
+    border-radius: 9px;
+    background: var(--brand-subtle);
+  }
+  .product {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--brand);
+  }
+  .tagline {
+    margin-top: var(--space-3);
+    max-width: 40ch;
+    font-size: var(--fs-sm);
+    color: var(--dim);
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-5);
+    margin: 0;
+  }
+  .links a,
+  .bottom a {
+    color: var(--dim);
+    text-decoration: none;
+    font-size: var(--fs-sm);
+  }
+  .links a:hover,
+  .bottom a:hover {
+    color: var(--text);
+  }
+  .bottom {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-5);
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--dim);
+  }
+  .bottom a {
+    font-size: var(--fs-xs);
+  }
+  .lang {
+    margin-left: auto;
+  }
+  @media (max-width: 560px) {
+    .lang {
+      margin-left: 0;
+    }
+  }
+</style>

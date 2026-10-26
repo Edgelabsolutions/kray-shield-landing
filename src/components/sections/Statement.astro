@@ -1,0 +1,44 @@
+---
+/**
+ * One sentence, large, whose words brighten as it scrolls past (scripts/motion.ts,
+ * `[data-scrub-words]`). Split into words here, at build time: the text is complete and readable
+ * in the HTML, and with reduced motion it simply renders at full strength.
+ */
+interface Props {
+  text: string
+}
+
+const { text } = Astro.props
+const words = text.split(/\s+/).filter(Boolean)
+---
+
+<section class="statement section">
+  <div class="container">
+    <p class="text" data-scrub-words>
+      {words.map((word, i) => (
+        <>
+          <span data-word>{word}</span>
+          {i < words.length - 1 ? ' ' : ''}
+        </>
+      ))}
+    </p>
+  </div>
+</section>
+
+<style>
+  .statement {
+    padding-block: clamp(4rem, 2rem + 8vw, 9rem);
+  }
+  .text {
+    max-width: 30ch;
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 1rem + 3.2vw, 3.5rem);
+    font-weight: 600;
+    line-height: 1.18;
+    letter-spacing: -0.005em;
+    color: var(--text);
+  }
+  :global(html[lang='uk']) .text {
+    max-width: 34ch;
+  }
+</style>

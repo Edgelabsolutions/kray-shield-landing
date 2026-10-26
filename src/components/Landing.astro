@@ -1,0 +1,51 @@
+---
+/** The whole landing page for one language. Both routes render this. */
+import Base from '../layouts/Base.astro'
+import Header from './Header.astro'
+import Footer from './Footer.astro'
+import Hero from './sections/Hero.astro'
+import Statement from './sections/Statement.astro'
+import HowItWorks from './sections/HowItWorks.astro'
+import Security from './sections/Security.astro'
+import UseCasesSection from './sections/UseCasesSection.astro'
+import Field from './sections/Field.astro'
+import Console from './sections/Console.astro'
+import Faq from './sections/Faq.astro'
+import Contact from './sections/Contact.astro'
+import { getCopy } from '../content'
+import type { Lang } from '../i18n/lang'
+
+interface Props {
+  lang: Lang
+}
+
+const { lang } = Astro.props
+const copy = getCopy(lang)
+---
+
+<Base lang={lang} title={copy.meta.title} description={copy.meta.description}>
+  <Header lang={lang} copy={copy} />
+  <main id="main" tabindex="-1">
+    <Hero copy={copy} />
+    <Statement text={copy.statement} />
+    <HowItWorks copy={copy} />
+    <Security copy={copy} />
+    <UseCasesSection copy={copy} />
+    <Field copy={copy} />
+    <Console copy={copy} />
+    <Faq copy={copy} />
+    <Contact copy={copy} />
+  </main>
+  <Footer lang={lang} copy={copy} />
+</Base>
+
+<script>
+  // Smooth scrolling and the page-level scroll effects (see scripts/motion.ts).
+  import '../scripts/motion'
+</script>
+
+<style>
+  main:focus {
+    outline: none;
+  }
+</style>

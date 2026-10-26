@@ -1,0 +1,285 @@
+/*
+ * KeySplit — the hero's A ⊕ B = key panel. Every animated state hangs off `[data-phase]` on the
+ * root, so the React side only ever flips one attribute.
+ */
+
+.root {
+  margin: 0;
+  width: 100%;
+  max-width: 560px;
+}
+
+.panel {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--panel) 92%, transparent),
+    var(--panel)
+  );
+  padding: clamp(14px, 2.4vw, 22px);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--text) 4%, transparent) inset,
+    0 24px 60px -30px rgb(0 0 0 / 0.55);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: clamp(12px, 2vw, 18px);
+}
+
+.toggle {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line2);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dim);
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+.toggle:hover {
+  color: var(--text);
+  border-color: var(--dim);
+}
+@media (prefers-reduced-motion: reduce) {
+  .toggle {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ the equation */
+
+.equation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    'fa xor fb eq fk'
+    'la . lb . lk';
+  align-items: center;
+  column-gap: clamp(6px, 1.4vw, 12px);
+}
+
+.frameA {
+  grid-area: fa;
+}
+.frameB {
+  grid-area: fb;
+}
+.frameK {
+  grid-area: fk;
+}
+.xor {
+  grid-area: xor;
+}
+.eq {
+  grid-area: eq;
+}
+.legend {
+  align-self: start;
+  min-width: 0;
+}
+.legendA {
+  grid-area: la;
+}
+.legendB {
+  grid-area: lb;
+}
+.legendK {
+  grid-area: lk;
+}
+
+.frame {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel2);
+  padding: 5%;
+  transition:
+    border-color var(--dur) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out);
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  shape-rendering: crispEdges;
+}
+
+.on {
+  fill: var(--dim);
+  opacity: 0.62;
+}
+.off {
+  fill: var(--line);
+  opacity: 0.32;
+}
+
+.name {
+  margin-top: 8px;
+  font-family: var(--font-display);
+  font-size: clamp(0.75rem, 0.7rem + 0.3vw, 0.875rem);
+  font-weight: 600;
+  line-height: 1.2;
+}
+.where {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 0.55rem + 0.2vw, 10.5px);
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  color: var(--dim);
+}
+
+.op {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--line2);
+  transition:
+    color var(--dur) var(--ease-out),
+    text-shadow var(--dur) var(--ease-out);
+}
+
+/* ------------------------------------------------------------------ the key grid */
+
+.key {
+  opacity: 0;
+  /* Default (locking, idle): no delay. */
+  transition: opacity 240ms var(--ease-out);
+}
+
+/* Assembling: each column resolves as the scan bar passes over it. */
+[data-phase='assembled'] .key,
+[data-phase='open'] .key {
+  opacity: 1;
+  transition-delay: var(--d, 0ms);
+}
+
+/* Wiping: cells drop out in random order. */
+[data-phase='wiped'] .key {
+  opacity: 0;
+  transition-duration: 200ms;
+  transition-delay: var(--w, 0ms);
+}
+
+.lock {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  color: var(--dim);
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease-out);
+}
+[data-phase='locked'] .lock,
+[data-phase='approve'] .lock {
+  opacity: 0.9;
+}
+
+[data-phase='open'] .frameK {
+  border-color: color-mix(in srgb, var(--ok) 55%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 12%, transparent);
+}
+
+/* ------------------------------------------------------------------ the XOR scan */
+
+.scan {
+  position: absolute;
+  top: 5%;
+  bottom: 5%;
+  left: 5%;
+  width: calc(90% / 16);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 45%, transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+[data-phase='assembled'] .scan {
+  animation: scan 900ms linear forwards;
+}
+@keyframes scan {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(1500%);
+  }
+}
+
+[data-phase='assembled'] .op,
+[data-phase='open'] .eq {
+  color: var(--accent);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* ------------------------------------------------------------------ operator approval */
+
+[data-phase='approve'] .frameB {
+  border-color: color-mix(in srgb, var(--attn) 70%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--attn) 14%, transparent);
+}
+
+.tap {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34%;
+  aspect-ratio: 1;
+  border: 2px solid var(--attn);
+  border-radius: 50%;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.4);
+  pointer-events: none;
+}
+[data-phase='approve'] .tap {
+  animation: tap 1100ms var(--ease-out) 250ms both;
+}
+@keyframes tap {
+  0% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.6);
+  }
+}
+
+/* ------------------------------------------------------------------ status + caption */
+
+.status {
+  display: flex;
+  justify-content: center;
+  min-height: 24px;
+  margin-top: clamp(14px, 2.4vw, 20px);
+}
+
+.caption {
+  margin-top: var(--space-3);
+  max-width: 52ch;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  color: var(--dim);
+}
+
+@media (max-width: 420px) {
+  .where {
+    display: none;
+  }
+}

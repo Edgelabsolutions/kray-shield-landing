@@ -1,0 +1,182 @@
+/*
+ * Kray Shield landing — design tokens.
+ *
+ * Ported from the Kray Portal (`kray-portal/src/index.css`), so the landing and the admin console
+ * read as one product. Same names, same values, same TWO THEMES:
+ *
+ *  - `:root` is DARK (the default) and `:root[data-theme='light']` is LIGHT. The theme toggle in the
+ *    header sets the attribute; `localStorage` remembers it. Like the portal, there is no
+ *    system-preference mode: the product's look is dark.
+ *  - The accents are theme-aware because a colour chosen for a dark panel is not readable on a white
+ *    one. The light accents are the same hues, DEEPER.
+ *
+ * The tone vocabulary is split by MEANING, not hue (portal rule, kept here):
+ *   accent — brand and primary action. Never a warning.
+ *   ok     — healthy / done (same green as accent, by design).
+ *   attn   — yellow: needs a human, or mid-flight (pending, unlocked, near expiry).
+ *   err    — red: a fault, or a terminal state.
+ *   info   — cyan: informational, explicitly not "something is wrong".
+ *   org    — periwinkle: a tenant / organisation label.
+ *   brand  — the muted camo green of the logo mark only.
+ *
+ * No Tailwind: every component reads these custom properties directly.
+ */
+
+:root {
+  /* ---------------------------------------------------------------- surfaces + text (dark) */
+  --bg: #0f172a;
+  --panel: #1e293b;
+  --panel2: #172033;
+  --line: #334155;
+  --line2: #475569;
+  --text: #f8fafc;
+  --dim: #94a3b8;
+  --accent-subtle: #0a2018;
+  /* The corner glow behind the page. Part of the theme: a teal wash over a differently tinted
+     surface reads as a colour bug. */
+  --glow: #13201f;
+
+  /* ---------------------------------------------------------------- status + brand accents */
+  --accent: #22c55e;
+  --accent-deep: #16a34a;
+  --ok: #22c55e;
+  --attn: #eab308;
+  --attn-deep: #ca9a04;
+  --err: #ef4444;
+  --info: #38bdf8;
+  --org: #6e8bf5;
+  --brand: #6b8f5e;
+  --brand-subtle: #101a0e;
+  --on-accent: #08110d;
+  --scrim: rgb(0 0 0 / 0.6);
+
+  /* ---------------------------------------------------------------- landing-only surfaces */
+  /* The blueprint grid behind every section (a nod to kray.in.ua). Faint on purpose: it is texture,
+     not structure. */
+  --grid: rgb(148 163 184 / 0.06);
+  /* The header once the page has scrolled under it. */
+  --header-bg: rgb(15 23 42 / 0.78);
+  /* The inverted contact band: the one place the page flips to the opposite surface. */
+  --invert-bg: #f8fafc;
+  --invert-text: #0f172a;
+  --invert-dim: #475569;
+  --invert-line: #cbd5e1;
+  /* Phone mock-up chrome. */
+  --device-frame: #0b1220;
+  --device-bezel: #273449;
+
+  color-scheme: dark;
+}
+
+/*
+ * LIGHT — white panels on a pale slate base, dark text; accents taken DEEPER so they stay readable as
+ * text on white and on their own 10% tints. Values are the portal's.
+ */
+:root[data-theme='light'] {
+  --bg: #f1f5f9;
+  --panel: #ffffff;
+  --panel2: #f8fafc;
+  --line: #e2e8f0;
+  --line2: #cbd5e1;
+  --text: #0f172a;
+  --dim: #475569;
+  --accent-subtle: #dcfce7;
+  --glow: #ffffff;
+
+  --accent: #15803d;
+  --accent-deep: #166534;
+  --ok: #15803d;
+  --attn: #a35c08;
+  --attn-deep: #854d0e;
+  --err: #dc2626;
+  --info: #0284c7;
+  --org: #5b54f0;
+  --brand: #4d7c0f;
+  --brand-subtle: #ecfccb;
+  --on-accent: #ffffff;
+  --scrim: rgb(15 23 42 / 0.5);
+
+  --grid: rgb(15 23 42 / 0.05);
+  --header-bg: rgb(241 245 249 / 0.82);
+  --invert-bg: #0f172a;
+  --invert-text: #f8fafc;
+  --invert-dim: #94a3b8;
+  --invert-line: #334155;
+  --device-frame: #0f172a;
+  --device-bezel: #334155;
+
+  color-scheme: light;
+}
+
+/*
+ * Constant in both themes.
+ */
+:root {
+  /* ---------------------------------------------------------------- camouflage (fixed brand asset)
+   * ММ-14 "digital" pixel camo, the palette of the portal's CamoShield mark. Not theme tokens on
+   * purpose: camouflage that changed hue between themes would stop being the mark. */
+  --camo-1: #5a6b3e;
+  --camo-2: #3e4a2a;
+  --camo-3: #7c7f55;
+  --camo-4: #4a3b29;
+  --camo-5: #8a8a63;
+  --camo-6: #2f3822;
+  --camo-base: #4a5636;
+  --camo-edge: #2a2418;
+  --camo-glow: #c9b47a;
+
+  /* ---------------------------------------------------------------- type
+   * Display: Chakra Petch (the portal's face). It has no Cyrillic, so Exo 2 — the face the operator
+   * app already uses for Ukrainian — is loaded for the Cyrillic ranges only and takes over glyph by
+   * glyph on the UA page.
+   * Mono: JetBrains Mono (has Cyrillic). The families are registered by Astro's Fonts API
+   * (astro.config.mjs); these stacks only order them. */
+  --font-display: var(--font-chakra), var(--font-exo), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, 'SF Mono', monospace;
+
+  /* A modular scale (≈1.25) anchored on an 18px body. */
+  --fs-micro: 0.6875rem; /* 11px — mono labels */
+  --fs-xs: 0.75rem; /* 12px */
+  --fs-sm: 0.875rem; /* 14px */
+  --fs-base: 1rem; /* 16px */
+  --fs-body: 1.125rem; /* 18px — running text */
+  --fs-lg: 1.375rem; /* 22px */
+  --fs-xl: clamp(1.5rem, 1.2rem + 1vw, 1.875rem); /* 24 → 30 */
+  --fs-2xl: clamp(1.875rem, 1.3rem + 2.2vw, 3rem); /* 30 → 48: section titles */
+  --fs-3xl: clamp(2.5rem, 1.4rem + 4.6vw, 5.25rem); /* 40 → 84: the hero */
+
+  --lh-tight: 1.04;
+  --lh-snug: 1.2;
+  --lh-body: 1.6;
+
+  --tracking-label: 0.1em;
+
+  /* ---------------------------------------------------------------- shape + space */
+  --radius-btn: 8px;
+  --radius-tile: 9px;
+  --radius-card: 12px;
+  --radius-device: 34px;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+  --space-10: 8rem;
+
+  --container: 1240px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --header-h: 68px;
+  --section-pad: clamp(4.5rem, 3rem + 6vw, 9rem);
+
+  /* ---------------------------------------------------------------- motion */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 150ms;
+  --dur: 300ms;
+  --dur-slow: 600ms;
+}

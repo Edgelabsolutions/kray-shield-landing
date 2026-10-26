@@ -1,0 +1,48 @@
+/*! PixelTransition styles, adapted from React Bits (PixelTransition-TS-CSS). Copyright (c) 2026
+ * David Haz. MIT + Commons Clause License Condition v1.0, see ../README.md */
+
+/* Kray: classes prefixed `rb-`; full width instead of a fixed 300px; radius and focus ring from the
+   page tokens; an `--auto` mode that sizes the card to the taller face. */
+
+.rb-pixel-transition {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rb-pixel-transition[role='button'] {
+  cursor: pointer;
+}
+
+.rb-pixel-transition:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.rb-pixel-transition__face {
+  position: absolute;
+  inset: 0;
+}
+
+/* aspectRatio="auto": both faces share one grid cell, so the card is as tall as the taller one. */
+.rb-pixel-transition--auto {
+  display: grid;
+}
+.rb-pixel-transition--auto > .rb-pixel-transition__face {
+  position: relative;
+  inset: auto;
+  grid-area: 1 / 1;
+}
+
+.rb-pixel-transition__pixels {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}

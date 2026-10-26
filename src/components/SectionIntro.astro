@@ -1,0 +1,39 @@
+---
+/** A section's title and its one-line lead: title left, lead right on wide screens. */
+interface Props {
+  id: string
+  title: string
+  lead?: string
+}
+
+const { id, title, lead } = Astro.props
+---
+
+<header class="intro">
+  <h2 {id} class="title">
+    {title}
+  </h2>
+  {lead && <p class="lead">{lead}</p>}
+</header>
+
+<style>
+  .intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-5) var(--space-7);
+    align-items: end;
+    margin-bottom: clamp(2rem, 1rem + 3vw, 4rem);
+  }
+  .title {
+    font-size: var(--fs-2xl);
+  }
+  .lead {
+    max-width: 46ch;
+    color: var(--dim);
+  }
+  @media (max-width: 960px) {
+    .intro {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

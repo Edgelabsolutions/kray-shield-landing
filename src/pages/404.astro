@@ -1,0 +1,58 @@
+---
+/** Not found: bilingual, because we can't know which language the visitor came from. */
+import Base from '../layouts/Base.astro'
+import CamoShield from '../components/brand/CamoShield.astro'
+import { withBase } from '../lib/url'
+---
+
+<Base lang="en" title="Page not found · Kray Shield" description="This page doesn't exist.">
+  <main class="nf">
+    <span class="mark">
+      <CamoShield size={48} />
+    </span>
+    <h1>This page doesn’t exist.</h1>
+    <p lang="uk">Такої сторінки не існує.</p>
+    <div class="links">
+      <a class="btn btn--primary" href={withBase()}>
+        Go to Kray Shield
+      </a>
+      <a class="btn btn--secondary" href={withBase('uk/')} lang="uk">
+        На головну
+      </a>
+    </div>
+  </main>
+</Base>
+
+<style>
+  .nf {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: var(--space-4);
+    min-height: 100dvh;
+    padding: var(--gutter);
+    text-align: center;
+  }
+  .mark {
+    display: grid;
+    place-items: center;
+    width: 80px;
+    height: 80px;
+    border: 1px solid color-mix(in srgb, var(--brand) 55%, transparent);
+    border-radius: 20px;
+    background: var(--brand-subtle);
+  }
+  h1 {
+    font-size: var(--fs-2xl);
+  }
+  p {
+    color: var(--dim);
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+</style>

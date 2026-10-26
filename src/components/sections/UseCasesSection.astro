@@ -1,0 +1,19 @@
+---
+/** Use cases: the Defence / Civil switch (React island, hydrated when it scrolls into view). */
+import SectionIntro from '../SectionIntro.astro'
+import UseCases from '../islands/UseCases.tsx'
+import type { Copy } from '../../content/types'
+
+interface Props {
+  copy: Copy
+}
+
+const { copy } = Astro.props
+---
+
+<section id="use-cases" class="section" aria-labelledby="use-cases-title">
+  <div class="container">
+    <SectionIntro id="use-cases-title" title={copy.useCases.title} lead={copy.useCases.lead} />
+    <UseCases client:visible copy={copy.useCases} />
+  </div>
+</section>

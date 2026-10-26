@@ -1,0 +1,189 @@
+---
+/**
+ * Hero: the promise, the two CTAs, and the A ⊕ B = key panel. The spec plate under it carries the
+ * four facts a technical buyer checks first.
+ */
+import KeySplit from '../islands/KeySplit.tsx'
+import type { Copy } from '../../content/types'
+
+interface Props {
+  copy: Copy
+}
+
+const { copy } = Astro.props
+const h = copy.hero
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="container layout">
+    <div class="copy">
+      <h1 id="hero-title" class="title">
+        {h.title}
+      </h1>
+      <p class="lead">{h.lead}</p>
+      <p class="lead lead--field">{h.leadField}</p>
+      <div class="ctas">
+        <a class="btn btn--primary btn--lg" href="#contact">
+          {h.ctaPrimary}
+        </a>
+        <a class="btn btn--secondary btn--lg" href="#how">
+          {h.ctaSecondary}
+        </a>
+      </div>
+    </div>
+    <div class="visual">
+      <KeySplit client:idle copy={h.visual} />
+    </div>
+  </div>
+
+  <div class="container">
+    <dl class="specs">
+      {h.specs.map((spec) => (
+        <div class="spec">
+          <dt class="spec__value">{spec.value}</dt>
+          <dd class="spec__label">{spec.label}</dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    padding-top: clamp(2.5rem, 1rem + 6vw, 6.5rem);
+    padding-bottom: clamp(3rem, 2rem + 4vw, 5.5rem);
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: clamp(2.5rem, 1rem + 5vw, 5rem);
+    align-items: center;
+  }
+
+  .title {
+    font-size: var(--fs-3xl);
+    line-height: var(--lh-tight);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    max-width: 17ch;
+  }
+  :global(html[lang='uk']) .title {
+    /* Ukrainian words run longer; give the measure a little more room. */
+    max-width: 18ch;
+    font-size: clamp(2.25rem, 1.3rem + 3.6vw, 4.25rem);
+  }
+
+  .lead {
+    margin-top: var(--space-5);
+    max-width: 56ch;
+    font-size: var(--fs-body);
+    color: var(--dim);
+  }
+  .lead--field {
+    margin-top: var(--space-3);
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+  }
+
+  .visual {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .specs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: clamp(3rem, 2rem + 4vw, 5rem) 0 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .spec {
+    padding: var(--space-5) var(--space-4) var(--space-5) 0;
+  }
+  .spec + .spec {
+    padding-left: var(--space-5);
+    border-left: 1px solid var(--line);
+  }
+  .spec__value {
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  .spec__label {
+    margin: 6px 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    line-height: 1.45;
+    color: var(--dim);
+  }
+
+  /* The page-load moment: copy settles in, then the key panel starts its first wipe. */
+  @media (prefers-reduced-motion: no-preference) {
+    .title,
+    .lead,
+    .ctas,
+    .visual {
+      animation: rise 700ms var(--ease-out) both;
+    }
+    .lead {
+      animation-delay: 90ms;
+    }
+    .lead--field {
+      animation-delay: 150ms;
+    }
+    .ctas {
+      animation-delay: 210ms;
+    }
+    .visual {
+      animation-delay: 160ms;
+      animation-duration: 900ms;
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .visual {
+      justify-content: flex-start;
+    }
+  }
+  @media (max-width: 720px) {
+    .specs {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .spec,
+    .spec + .spec {
+      padding: var(--space-4) var(--space-3) var(--space-4) 0;
+      border-left: 0;
+    }
+    .spec:nth-child(even) {
+      padding-left: var(--space-4);
+      border-left: 1px solid var(--line);
+    }
+    .spec:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+  }
+</style>

@@ -1,0 +1,353 @@
+---
+/**
+ * Admin console: a facsimile of the portal's fleet screen, built from the same tokens and atoms
+ * (Card, Lozenge, the camo mark), with sample data. It's an image of the product, so assistive tech
+ * gets one label for it rather than a fake table.
+ */
+import { LayoutDashboard, Layers, Users, BadgeCheck, Usb, ScrollText } from 'lucide-react'
+import SectionIntro from '../SectionIntro.astro'
+import CamoShield from '../brand/CamoShield.astro'
+import { DEVICE_TONE } from '../../lib/tone'
+import type { Copy } from '../../content/types'
+
+interface Props {
+  copy: Copy
+}
+
+const { copy } = Astro.props
+const c = copy.console
+const m = c.mock
+const NAV_ICONS = [LayoutDashboard, Layers, Users, BadgeCheck, Usb, ScrollText]
+
+const rows = [
+  { id: 'DRN-01', status: 'encrypted', boot: m.ago.d1 },
+  { id: 'DRN-04', status: 'unlocked', boot: m.ago.m2 },
+  { id: 'DRN-07', status: 'unlocked', boot: m.ago.m14 },
+  { id: 'DRN-09', status: 'registered', boot: m.never },
+  { id: 'DRN-12', status: 'revoked', boot: m.ago.h3 },
+] as const
+
+const events = [
+  { label: m.events.unlock, ref: 'DRN-04', at: m.ago.m2, tone: 'ok' },
+  { label: m.events.lease, ref: 'op·a3f1', at: m.ago.m14, tone: 'info' },
+  { label: m.events.signed, ref: 'bench·02', at: m.ago.h1, tone: 'secondary' },
+  { label: m.events.revoked, ref: 'op·77c0', at: m.ago.h3, tone: 'err' },
+] as const
+---
+
+<section id="console" class="section console" aria-labelledby="console-title">
+  <div class="container">
+    <SectionIntro id="console-title" title={c.title} lead={c.lead} />
+
+    <div class="mock" role="img" aria-label={m.label}>
+      <div class="mock-inner" aria-hidden="true">
+        <aside class="rail">
+          <div class="rail-brand">
+            <span class="rail-mark">
+              <CamoShield size={18} />
+            </span>
+            <span class="rail-name">
+              KRAY <b>SHIELD</b>
+            </span>
+          </div>
+          <ul class="rail-nav">
+            {m.nav.map((item, i) => {
+              const Icon = NAV_ICONS[i]
+              return (
+                <li class={i === 1 ? 'active' : undefined}>
+                  <Icon size={15} strokeWidth={1.75} />
+                  <span>{item}</span>
+                </li>
+              )
+            })}
+          </ul>
+        </aside>
+
+        <div class="main">
+          <div class="fleet-head">
+            <div>
+              <div class="fleet-name">{m.fleet}</div>
+              <div class="label">{m.fleetSub}</div>
+            </div>
+            <span class="lozenge" data-tone="org">
+              {copy.field.phone.org} · {copy.field.phone.orgName}
+            </span>
+          </div>
+
+          <div class="table">
+            <div class="row head">
+              <span>{m.colDevice}</span>
+              <span>{m.colStatus}</span>
+              <span>{m.colBoot}</span>
+            </div>
+            {rows.map((r) => (
+              <div class="row">
+                <span class="mono id">{r.id}</span>
+                <span>
+                  <span class="lozenge" data-tone={DEVICE_TONE[r.status]}>
+                    {m.statuses[r.status]}
+                  </span>
+                </span>
+                <span class="mono when">{r.boot}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="audit">
+          <div class="audit-title">{m.auditTitle}</div>
+          <ul>
+            {events.map((e) => (
+              <li>
+                <span class="dot" data-tone={e.tone} />
+                <span class="ev">
+                  <span class="ev-label">{e.label}</span>
+                  <span class="mono ev-meta">
+                    {e.ref} · {e.at}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <ul class="points" role="list">
+      {c.points.map((p) => (
+        <li class="point">
+          <h3 class="point-title">{p.title}</h3>
+          <p class="point-body">{p.body}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  /* ---------------------------------------------------------------- the console facsimile */
+  .mock {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--bg);
+    box-shadow: 0 40px 80px -48px rgb(0 0 0 / 0.6);
+    overflow: hidden;
+  }
+  .mock-inner {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr) 260px;
+    min-height: 360px;
+    font-size: 13px;
+  }
+
+  .rail {
+    padding: 16px 12px;
+    border-right: 1px solid var(--line);
+    background: var(--panel2);
+  }
+  .rail-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 6px 16px;
+  }
+  .rail-mark {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid color-mix(in srgb, var(--brand) 55%, transparent);
+    border-radius: 8px;
+    background: var(--brand-subtle);
+  }
+  .rail-name {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .rail-name b {
+    color: var(--brand);
+  }
+  .rail-nav {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .rail-nav li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 8px;
+    color: var(--dim);
+    white-space: nowrap;
+  }
+  .rail-nav li.active {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--accent);
+  }
+
+  .main {
+    padding: 18px 20px;
+    min-width: 0;
+  }
+  .fleet-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .fleet-name {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .table {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 0.9fr);
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+  }
+  .row + .row {
+    border-top: 1px solid var(--line);
+  }
+  .row.head {
+    background: var(--panel2);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .id {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .when {
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+  .audit {
+    padding: 18px 16px;
+    border-left: 1px solid var(--line);
+    background: var(--panel2);
+  }
+  .audit-title {
+    margin-bottom: 12px;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .audit ul {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .audit li {
+    display: flex;
+    gap: 10px;
+  }
+  .dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    margin-top: 5px;
+    border-radius: 2px;
+    background: var(--tone);
+  }
+  .ev {
+    display: grid;
+    min-width: 0;
+  }
+  .ev-label {
+    font-size: 13px;
+    line-height: 1.3;
+  }
+  .ev-meta {
+    font-size: 10.5px;
+    color: var(--dim);
+  }
+
+  /* ---------------------------------------------------------------- points */
+  .points {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 var(--space-6);
+    margin: clamp(2.5rem, 1.5rem + 3vw, 4rem) 0 0;
+  }
+  .point {
+    padding: var(--space-5) 0 var(--space-6);
+    border-top: 1px solid var(--line);
+  }
+  .point-title {
+    font-size: var(--fs-lg);
+    line-height: 1.2;
+  }
+  .point-body {
+    margin-top: var(--space-2);
+    font-size: var(--fs-base);
+    line-height: 1.55;
+    color: var(--dim);
+  }
+
+  @media (max-width: 1100px) {
+    .mock-inner {
+      grid-template-columns: 180px minmax(0, 1fr);
+    }
+    .audit {
+      grid-column: 1 / -1;
+      border-left: 0;
+      border-top: 1px solid var(--line);
+    }
+    .audit ul {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 860px) {
+    .points {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 720px) {
+    .mock-inner {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .rail {
+      display: none;
+    }
+    .audit ul {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .main {
+      padding: 14px;
+    }
+    .row {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr) minmax(0, 0.8fr);
+      gap: 8px;
+      padding: 9px 10px;
+    }
+  }
+  @media (max-width: 560px) {
+    .points {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

@@ -1,0 +1,56 @@
+---
+/**
+ * The Kray Shield brand mark (pixel-camo shield), rendered at build time. Decorative: the brand name
+ * always sits beside it as real text, so it is hidden from assistive tech.
+ *
+ * SVG ids are document-global, so every instance gets its own clip id (two marks on one page — the
+ * header and the footer — would otherwise share the first one's clip).
+ */
+import { SHIELD_PATH, CAMO_BASE, CAMO_EDGE, CAMO_EDGE_GLOW, camoCells } from '../../lib/camo'
+
+interface Props {
+  size?: number
+  class?: string
+}
+
+const { size = 22, class: className } = Astro.props
+const cells = camoCells()
+const cell = 24 / 8
+const clipId = `camo-${Math.random().toString(36).slice(2, 9)}`
+---
+
+<svg
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  class={className}
+  aria-hidden="true"
+  focusable="false"
+>
+  <defs>
+    <clipPath id={clipId}>
+      <path d={SHIELD_PATH} />
+    </clipPath>
+  </defs>
+  <g clip-path={`url(#${clipId})`}>
+    <rect x="0" y="0" width="24" height="24" fill={CAMO_BASE} />
+    {cells.map((c) => (
+      <rect
+        x={c.x.toFixed(2)}
+        y={c.y.toFixed(2)}
+        width={cell + 0.1}
+        height={cell + 0.1}
+        fill={c.fill}
+      />
+    ))}
+  </g>
+  <path d={SHIELD_PATH} fill="none" stroke={CAMO_EDGE} stroke-opacity="0.9" stroke-width="1" />
+  <path
+    d={SHIELD_PATH}
+    fill="none"
+    stroke={CAMO_EDGE_GLOW}
+    stroke-opacity="0.5"
+    stroke-width="0.5"
+  />
+</svg>
